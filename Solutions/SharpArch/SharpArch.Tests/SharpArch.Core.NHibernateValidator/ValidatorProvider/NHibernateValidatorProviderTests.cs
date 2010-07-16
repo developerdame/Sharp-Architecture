@@ -23,8 +23,7 @@ namespace Tests.SharpArch.Core.NHibernateValidator.ValidatorProvider
         [Test]
         public void ClientValidation_LengthProperty()
         {
-            var validationRule = this.ClientValidation_AssertRule(
-                x => x.LengthProperty, "stringLength", "length_message");
+            var validationRule = this.ClientValidation_AssertRule(x => x.LengthProperty, "stringLength", "length_message");
             Assert.That(validationRule.ValidationParameters["minimumLength"], Is.EqualTo(3));
             Assert.That(validationRule.ValidationParameters["maximumLength"], Is.EqualTo(10));
         }
@@ -58,8 +57,7 @@ namespace Tests.SharpArch.Core.NHibernateValidator.ValidatorProvider
         [Test]
         public void ClientValidation_PatternProperty()
         {
-            var validationRule = this.ClientValidation_AssertRule(
-                x => x.PatternProperty, "regularExpression", "pattern_message");
+            var validationRule = this.ClientValidation_AssertRule(x => x.PatternProperty, "regularExpression", "pattern_message");
             Assert.That(validationRule.ValidationParameters["pattern"], Is.EqualTo("[a-zA-Z]{3,10}"));
         }
 
@@ -69,6 +67,12 @@ namespace Tests.SharpArch.Core.NHibernateValidator.ValidatorProvider
             var validationRule = this.ClientValidation_AssertRule(x => x.RangeProperty, "range", "range_message");
             Assert.That(validationRule.ValidationParameters["minimum"], Is.EqualTo(3));
             Assert.That(validationRule.ValidationParameters["maximum"], Is.EqualTo(10));
+        }
+
+        [Test]
+        public void ClientValidation_NotNullNotEmptyProperty()
+        {
+            this.ClientValidation_AssertRule(x => x.NotNullNotEmptyProperty, "required", "not_null_not_empty_message");
         }
 
         [SetUp]
@@ -118,6 +122,9 @@ namespace Tests.SharpArch.Core.NHibernateValidator.ValidatorProvider
             public string PatternProperty { get; set; }
             [NHibernate.Validator.Constraints.Range(Message = "range_message", Min = 3, Max = 10)]
             public int RangeProperty { get; set; }
+
+            [NotNullNotEmpty(Message = "not_null_not_empty_message")]
+            public string NotNullNotEmptyProperty { get; set; }
         }
     }
 }

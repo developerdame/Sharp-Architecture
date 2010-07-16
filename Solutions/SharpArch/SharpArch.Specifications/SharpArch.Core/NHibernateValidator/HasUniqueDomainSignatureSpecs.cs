@@ -22,7 +22,6 @@ namespace SharpArch.Specifications.SharpArch.Core.NHibernateValidator
     using global::SharpArch.Core.CommonValidator;
     using global::SharpArch.Core.DomainModel;
     using global::SharpArch.Core.NHibernateValidator;
-    using global::SharpArch.Core.PersistenceSupport;
 
     using Machine.Specifications;
 
@@ -34,8 +33,6 @@ namespace SharpArch.Specifications.SharpArch.Core.NHibernateValidator
     {
         protected static IValidator validator;
 
-        protected static IEntityDuplicateChecker entityDuplicateChecker;
-
         protected static string entityName;
 
         protected static string entitySSN;
@@ -43,20 +40,68 @@ namespace SharpArch.Specifications.SharpArch.Core.NHibernateValidator
         private Establish context_for_each = () =>
             {
                 validator = MockRepository.GenerateMock<IValidator>();
-                entityDuplicateChecker = MockRepository.GenerateStub<IEntityDuplicateChecker>();
                 entitySSN = "111-22-3333";
                 entityName = "codai";
 
                 ServiceLocator.SetLocatorProvider(null);
             };
 
-        protected static void CreateSut()
+        protected static void SetContainer()
         {
             IWindsorContainer container = new WindsorContainer();
-            ServiceLocator.SetLocatorProvider(() => new WindsorServiceLocator(container));
-            container.Register(Component.For<IEntityDuplicateChecker>().Instance(entityDuplicateChecker));
+
             container.Register(Component.For<IValidator>().Instance(validator));
+
+            ServiceLocator.SetLocatorProvider(() => new WindsorServiceLocator(container));
         }
+
+        #region Private Methods
+
+        [HasUniqueDomainSignature]
+        public class Contractor : Entity
+        {
+            #region Properties
+
+            [DomainSignature]
+            public string Name { get; set; }
+
+            #endregion
+        }
+
+        [HasUniqueDomainSignatureWithGuidId]
+        public class ObjectWithGuidId : EntityWithTypedId<Guid>
+        {
+            #region Properties
+
+            [DomainSignature]
+            public string Name { get; set; }
+
+            #endregion
+        }
+
+        [HasUniqueDomainSignature]
+        public class ObjectWithStringIdAndValidatorForIntId : EntityWithTypedId<string>
+        {
+            #region Properties
+
+            [DomainSignature]
+            public string Name { get; set; }
+
+            #endregion
+        }
+
+        [HasUniqueDomainSignatureWithStringId]
+        public class User : EntityWithTypedId<string>
+        {
+            #region Properties
+
+            [DomainSignature]
+            public string SSN { get; set; }
+
+            #endregion
+        }
+
+        #endregion
     }
 
     [Subject(typeof(HasUniqueDomainSignatureValidator))]
@@ -70,9 +115,9 @@ namespace SharpArch.Specifications.SharpArch.Core.NHibernateValidator
             {
                 result = false;
                 contractor = new Contractor() { Name = entityName };
-                validator.Stub(a => a.IsValid(contractor)).IgnoreArguments().Return(false);
+                validator.Stub(a => a.IsValid(contractor)).Return(false);
 
-                CreateSut();
+                SetContainer();
             };
 
         Because of = () =>
@@ -98,7 +143,7 @@ namespace SharpArch.Specifications.SharpArch.Core.NHibernateValidator
 
                 validator.Stub(a => a.IsValid(objectWithGuidId1)).IgnoreArguments().Return(false);
 
-                CreateSut();
+                SetContainer();
             };
 
         Because of = () => result = objectWithGuidId1.IsValid();
@@ -120,7 +165,7 @@ namespace SharpArch.Specifications.SharpArch.Core.NHibernateValidator
                 user = new User { SSN = "123-12-1234" };
                 validator.Stub(a => a.IsValid(user)).IgnoreArguments().Return(false);
 
-                CreateSut();
+                SetContainer();
             };
 
         Because of = () => result = user.IsValid();
@@ -143,7 +188,7 @@ namespace SharpArch.Specifications.SharpArch.Core.NHibernateValidator
                 contractor = new Contractor { Name = "the name" };
                 validator.Stub(a => a.IsValid(contractor)).IgnoreArguments().Return(true);
 
-                CreateSut();
+                SetContainer();
             };
 
         Because of = () => result = contractor.IsValid();
@@ -165,7 +210,7 @@ namespace SharpArch.Specifications.SharpArch.Core.NHibernateValidator
                 entity = new ObjectWithStringIdAndValidatorForIntId { Name = "whatever" };
                 validator.Stub(a => a.IsValid(entity)).IgnoreArguments().Throw(new PreconditionException());
 
-                CreateSut();
+                SetContainer();
             };
 
         Because of = () => result = Catch.Exception(() => entity.IsValid());
@@ -173,87 +218,6 @@ namespace SharpArch.Specifications.SharpArch.Core.NHibernateValidator
         It should_throw_a_precondition_exception = () => result.ShouldBeOfType(typeof(PreconditionException));
     }
 
-    #region Private Methods
-
-    [HasUniqueDomainSignature]
-    class Contractor : Entity
-    {
-        #region Properties
-
-        [DomainSignature]
-        public string Name { get; set; }
-
-        #endregion
-    }
-
-    class DuplicateCheckerStub : IEntityDuplicateChecker
-    {
-        #region Implemented Interfaces
-
-        #region IEntityDuplicateChecker
-
-        public bool DoesDuplicateExistWithTypedIdOf<IdT>(IEntityWithTypedId<IdT> entity)
-        {
-            Check.Require(entity != null);
-
-            if (entity as Contractor != null)
-            {
-                var contractor = entity as Contractor;
-                return !string.IsNullOrEmpty(contractor.Name) && contractor.Name.ToLower() == "codai";
-            }
-            else if (entity as User != null)
-            {
-                var user = entity as User;
-                return !string.IsNullOrEmpty(user.SSN) && user.SSN.ToLower() == "123-12-1234";
-            }
-            else if (entity as ObjectWithGuidId != null)
-            {
-                var objectWithGuidId = entity as ObjectWithGuidId;
-                return !string.IsNullOrEmpty(objectWithGuidId.Name) && objectWithGuidId.Name.ToLower() == "codai";
-            }
-
-            // By default, simply return false for no duplicates found
-            return false;
-        }
-
-        #endregion
-
-        #endregion
-    }
-
-    [HasUniqueDomainSignatureWithGuidId]
-    class ObjectWithGuidId : EntityWithTypedId<Guid>
-    {
-        #region Properties
-
-        [DomainSignature]
-        public string Name { get; set; }
-
-        #endregion
-    }
-
-    [HasUniqueDomainSignature]
-    class ObjectWithStringIdAndValidatorForIntId : EntityWithTypedId<string>
-    {
-        #region Properties
-
-        [DomainSignature]
-        public string Name { get; set; }
-
-        #endregion
-    }
-
-    [HasUniqueDomainSignatureWithStringId]
-    class User : EntityWithTypedId<string>
-    {
-        #region Properties
-
-        [DomainSignature]
-        public string SSN { get; set; }
-
-        #endregion
-    }
-
-    #endregion
+    
 
 }

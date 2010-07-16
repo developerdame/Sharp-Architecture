@@ -22,8 +22,7 @@
         {
             this.ruleEmitters = new RuleEmitterList<IRuleArgs>();
 
-            this.ruleEmitters.AddSingle<NotNullNotEmptyAttribute>(
-                x => new ModelClientValidationRequiredRule(x.Message));
+            this.ruleEmitters.AddSingle<NotNullNotEmptyAttribute>(x => new ModelClientValidationRequiredRule(x.Message));
             this.ruleEmitters.AddSingle<NotEmptyAttribute>(x => new ModelClientValidationRequiredRule(x.Message));
             this.ruleEmitters.AddSingle<NotNullAttribute>(x => new ModelClientValidationRequiredRule(x.Message));
 

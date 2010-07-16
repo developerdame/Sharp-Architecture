@@ -71,6 +71,7 @@
     <Compile Include="SharpArch.Core\DomainModel\EntityWithTypedIdSpecs.cs" />
     <Compile Include="SharpArch.Core\FileCacheSpecs.cs" />
     <Compile Include="SharpArch.Core\DesignByContractSpecs.cs" />
+    <Compile Include="SharpArch.Core\NHibernateValidator\HasUniqueDomainSignatureAttributeSpecs.cs" />
     <Compile Include="SharpArch.Core\NHibernateValidator\HasUniqueDomainSignatureSpecs.cs" />
     <Compile Include="SharpArch.Core\SafeServiceLocatorSpecs.cs" />
   </ItemGroup>
