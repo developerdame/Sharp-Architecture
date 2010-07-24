@@ -7,7 +7,7 @@ namespace SharpArch.Core.NHibernateValidator.ValidatorProvider
     /// <summary>
     ///     Will help easily convert rules to model client validation rules.
     /// </summary>
-    internal class RuleEmitterList<TInputBase>
+    public class RuleEmitterList<TInputBase>
     {
         private readonly List<RuleEmitter> ruleEmitters = new List<RuleEmitter>();
 

@@ -26,22 +26,17 @@
             this.ruleEmitters.AddSingle<NotEmptyAttribute>(x => new ModelClientValidationRequiredRule(x.Message));
             this.ruleEmitters.AddSingle<NotNullAttribute>(x => new ModelClientValidationRequiredRule(x.Message));
 
-            this.ruleEmitters.AddSingle<LengthAttribute>(
-                x => new ModelClientValidationStringLengthRule(x.Message, x.Min, x.Max));
+            this.ruleEmitters.AddSingle<LengthAttribute>(x => new ModelClientValidationStringLengthRule(x.Message, x.Min, x.Max));
 
-            this.ruleEmitters.AddSingle<MinAttribute>(
-                x => new ModelClientValidationRangeRule(x.Message, x.Value, null));
-            this.ruleEmitters.AddSingle<MaxAttribute>(
-                x => new ModelClientValidationRangeRule(x.Message, null, x.Value));
+            this.ruleEmitters.AddSingle<MinAttribute>(x => new ModelClientValidationRangeRule(x.Message, x.Value, null));
+            this.ruleEmitters.AddSingle<MaxAttribute>(x => new ModelClientValidationRangeRule(x.Message, null, x.Value));
 
-            this.ruleEmitters.AddSingle<RangeAttribute>(
-                x => new ModelClientValidationRangeRule(x.Message, x.Min, x.Max));
+            this.ruleEmitters.AddSingle<RangeAttribute>(x => new ModelClientValidationRangeRule(x.Message, x.Min, x.Max));
 
             this.ruleEmitters.AddSingle<PatternAttribute>(x => new ModelClientValidationRegexRule(x.Message, x.Regex));
         }
 
-        protected override IEnumerable<ModelValidator> GetValidators(
-            ModelMetadata metadata, ControllerContext context, IEnumerable<Attribute> attributes)
+        protected override IEnumerable<ModelValidator> GetValidators(ModelMetadata metadata, ControllerContext context, IEnumerable<Attribute> attributes)
         {
             var validationEngine = ValidatorEngineFactory.ValidatorEngine;
 

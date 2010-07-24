@@ -75,6 +75,12 @@ namespace Tests.SharpArch.Core.NHibernateValidator.ValidatorProvider
             this.ClientValidation_AssertRule(x => x.NotNullNotEmptyProperty, "required", "not_null_not_empty_message");
         }
 
+        [Test]
+        public void ClientValidation_EmailProperty()
+        {
+            this.ClientValidation_AssertNoRule(x => x.EmailProperty);
+        }
+
         [SetUp]
         public void SetUp()
         {
@@ -83,8 +89,7 @@ namespace Tests.SharpArch.Core.NHibernateValidator.ValidatorProvider
             this._controllerContext = new ControllerContext();
         }
 
-        private ModelClientValidationRule ClientValidation_AssertRule<TValue>(
-            Expression<Func<TestModel, TValue>> property, string validationType, string errorMessate)
+        private ModelClientValidationRule ClientValidation_AssertRule<TValue>(Expression<Func<TestModel, TValue>> property, string validationType, string errorMessage)
         {
             var modelMetadata = ModelMetadata.FromLambdaExpression(property, this._viewData);
 
@@ -99,9 +104,18 @@ namespace Tests.SharpArch.Core.NHibernateValidator.ValidatorProvider
             var validationRule = validationRules[0];
 
             Assert.That(validationRule.ValidationType, Is.EqualTo(validationType));
-            Assert.That(validationRule.ErrorMessage, Is.EqualTo(errorMessate));
+            Assert.That(validationRule.ErrorMessage, Is.EqualTo(errorMessage));
 
             return validationRule;
+        }
+
+        private void ClientValidation_AssertNoRule<TValue>(Expression<Func<TestModel, TValue>> property)
+        {
+            var modelMetadata = ModelMetadata.FromLambdaExpression(property, this._viewData);
+
+            var modelValidators = this._validatorProvider.GetValidators(modelMetadata, this._controllerContext);
+
+            Assert.That(modelValidators, Is.Empty);
         }
 
         private class TestModel
@@ -125,6 +139,9 @@ namespace Tests.SharpArch.Core.NHibernateValidator.ValidatorProvider
 
             [NotNullNotEmpty(Message = "not_null_not_empty_message")]
             public string NotNullNotEmptyProperty { get; set; }
+
+            [Email]
+            public string EmailProperty { get; set; }
         }
     }
 }

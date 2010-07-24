@@ -9,9 +9,7 @@ namespace SharpArch.Core.NHibernateValidator.ValidatorProvider
     /// </summary>
     internal class NHibernateValidatorClientValidator : ModelValidator
     {
-        public NHibernateValidatorClientValidator(
-            ModelMetadata metadata, ControllerContext controllerContext, List<ModelClientValidationRule> rules)
-            : base(metadata, controllerContext)
+        public NHibernateValidatorClientValidator(ModelMetadata metadata, ControllerContext controllerContext, List<ModelClientValidationRule> rules) : base(metadata, controllerContext)
         {
             this.Rules = rules;
         }

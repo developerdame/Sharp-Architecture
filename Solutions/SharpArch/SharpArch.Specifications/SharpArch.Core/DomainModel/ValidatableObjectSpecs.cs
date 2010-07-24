@@ -9,7 +9,7 @@
 // ReSharper disable UnusedMember.Global
 // ReSharper disable UnusedMember.Local
 
-namespace SharpArch.Specifications.SharpArch.Core.NHibernateValidator
+namespace SharpArch.Specifications.SharpArch.Core.DomainModel
 {
     using System;
 
@@ -29,7 +29,7 @@ namespace SharpArch.Specifications.SharpArch.Core.NHibernateValidator
 
     using Rhino.Mocks;
 
-    public abstract class specification_for_has_unique_domain_signature_validator
+    public abstract class specification_for_validatable_object
     {
         protected static IValidator validator;
 
@@ -38,13 +38,13 @@ namespace SharpArch.Specifications.SharpArch.Core.NHibernateValidator
         protected static string entitySSN;
 
         private Establish context_for_each = () =>
-            {
-                validator = MockRepository.GenerateMock<IValidator>();
-                entitySSN = "111-22-3333";
-                entityName = "codai";
+        {
+            validator = MockRepository.GenerateMock<IValidator>();
+            entitySSN = "111-22-3333";
+            entityName = "codai";
 
-                ServiceLocator.SetLocatorProvider(null);
-            };
+            ServiceLocator.SetLocatorProvider(null);
+        };
 
         protected static void SetContainer()
         {
@@ -104,47 +104,47 @@ namespace SharpArch.Specifications.SharpArch.Core.NHibernateValidator
         #endregion
     }
 
-    [Subject(typeof(HasUniqueDomainSignatureValidator))]
-    public class when_a_duplicate_exists_of_entity_during_validation_process : specification_for_has_unique_domain_signature_validator
+    [Subject(typeof(ValidatableObject))]
+    public class when_a_duplicate_exists_for_object_with_a_int_id_exists : specification_for_validatable_object
     {
         static Contractor contractor;
 
         static bool result;
 
         Establish context = () =>
-            {
-                result = false;
-                contractor = new Contractor() { Name = entityName };
-                validator.Stub(a => a.IsValid(contractor)).Return(false);
+        {
+            result = false;
+            contractor = new Contractor() { Name = entityName };
+            validator.Stub(a => a.IsValid(contractor)).Return(false);
 
-                SetContainer();
-            };
+            SetContainer();
+        };
 
         Because of = () =>
-            {
-                result = contractor.IsValid(); 
-            };
+        {
+            result = contractor.IsValid();
+        };
 
         It should_ask_the_validator_if_it_has_a_duplicate = () => validator.AssertWasCalled(a => a.IsValid(contractor));
 
         It should_return_false = () => result.ShouldBeFalse();
     }
 
-    [Subject(typeof(HasUniqueDomainSignatureValidator))]
-    public class when_duplicate_exists_of_entity_with_guid_id_during_validation_process : specification_for_has_unique_domain_signature_validator
+    [Subject(typeof(ValidatableObject))]
+    public class when_duplicate_exists_for_object_with_guid_id : specification_for_validatable_object
     {
         static ObjectWithGuidId objectWithGuidId1;
 
         static bool result;
 
         Establish context = () =>
-            {
-                objectWithGuidId1 = new ObjectWithGuidId {Name = entityName};
+        {
+            objectWithGuidId1 = new ObjectWithGuidId { Name = entityName };
 
-                validator.Stub(a => a.IsValid(objectWithGuidId1)).IgnoreArguments().Return(false);
+            validator.Stub(a => a.IsValid(objectWithGuidId1)).IgnoreArguments().Return(false);
 
-                SetContainer();
-            };
+            SetContainer();
+        };
 
         Because of = () => result = objectWithGuidId1.IsValid();
 
@@ -153,20 +153,20 @@ namespace SharpArch.Specifications.SharpArch.Core.NHibernateValidator
         It should_return_false_for_the_duplicate_object = () => result.ShouldBeFalse();
     }
 
-    [Subject(typeof(HasUniqueDomainSignatureValidator))]
-    public class when_a_duplicate_exists_of_entity_with_string_id_during_validation_process : specification_for_has_unique_domain_signature_validator
+    [Subject(typeof(ValidatableObject))]
+    public class when_a_duplicate_exists_for_object_with_string_id : specification_for_validatable_object
     {
         static User user;
 
         static bool result;
 
         Establish context = () =>
-            {
-                user = new User { SSN = "123-12-1234" };
-                validator.Stub(a => a.IsValid(user)).IgnoreArguments().Return(false);
+        {
+            user = new User { SSN = "123-12-1234" };
+            validator.Stub(a => a.IsValid(user)).IgnoreArguments().Return(false);
 
-                SetContainer();
-            };
+            SetContainer();
+        };
 
         Because of = () => result = user.IsValid();
 
@@ -175,21 +175,21 @@ namespace SharpArch.Specifications.SharpArch.Core.NHibernateValidator
         It should_return_false_when_is_valid_is_called = () => result.ShouldBeFalse();
     }
 
-    [Subject(typeof(HasUniqueDomainSignatureValidator))]
-    public class when_no_duplicate_exists_during_validation_process : specification_for_has_unique_domain_signature_validator
+    [Subject(typeof(ValidatableObject))]
+    public class when_no_duplicate_exists_for_object : specification_for_validatable_object
     {
         static Contractor contractor;
 
         static bool result;
 
         Establish context = () =>
-            { 
-                result = false;
-                contractor = new Contractor { Name = "the name" };
-                validator.Stub(a => a.IsValid(contractor)).IgnoreArguments().Return(true);
+        {
+            result = false;
+            contractor = new Contractor { Name = "the name" };
+            validator.Stub(a => a.IsValid(contractor)).IgnoreArguments().Return(true);
 
-                SetContainer();
-            };
+            SetContainer();
+        };
 
         Because of = () => result = contractor.IsValid();
 
@@ -198,26 +198,23 @@ namespace SharpArch.Specifications.SharpArch.Core.NHibernateValidator
         It should_return_true_when_is_valid_is_called = () => result.ShouldBeTrue();
     }
 
-    [Subject(typeof(HasUniqueDomainSignatureValidator))]
-    public class when_wrong_validator_is_used_with_entity_having_different_id_type : specification_for_has_unique_domain_signature_validator
+    [Subject(typeof(ValidatableObject))]
+    public class when_wrong_validator_is_used_with_entity_having_different_id_type : specification_for_validatable_object
     {
         static ObjectWithStringIdAndValidatorForIntId entity;
 
         static Exception result;
 
         Establish context = () =>
-            {
-                entity = new ObjectWithStringIdAndValidatorForIntId { Name = "whatever" };
-                validator.Stub(a => a.IsValid(entity)).IgnoreArguments().Throw(new PreconditionException());
+        {
+            entity = new ObjectWithStringIdAndValidatorForIntId { Name = "whatever" };
+            validator.Stub(a => a.IsValid(entity)).IgnoreArguments().Throw(new PreconditionException());
 
-                SetContainer();
-            };
+            SetContainer();
+        };
 
         Because of = () => result = Catch.Exception(() => entity.IsValid());
 
         It should_throw_a_precondition_exception = () => result.ShouldBeOfType(typeof(PreconditionException));
     }
-
-    
-
 }
